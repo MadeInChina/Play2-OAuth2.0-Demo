@@ -1,0 +1,5 @@
+POST        /oauth/access_token        @endpoint.OAuthEndPoint.accessToken
+GET         /resources                 @endpoint.OAuthEndPoint.resources
+GET         /test                      @endpoint.OAuthEndPoint.test
+
+

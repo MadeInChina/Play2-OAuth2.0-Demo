@@ -1,0 +1,4 @@
+#Successful Tests
+#Fri May 06 11:56:31 CST 2016
+org.hrw.login.service.mongodb.MongoDBSpec=1462506990784
+org.hrw.login.service.oauth2.OauthClientSpec=1462506991386
