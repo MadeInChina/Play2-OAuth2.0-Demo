@@ -5,6 +5,7 @@ import java.util.Date
 import com.redis.RedisClientPool
 import org.hrw.login.service.mongodb.AccountDAO
 import org.hrw.login.service.oauth2.{Account, OauthAccessToken, OauthAuthorizationCode, OauthClient}
+import play.api.Logger
 import play.api.mvc.Action
 import scalaoauth2.provider._
 
@@ -29,10 +30,15 @@ class AuthorizeDataHandler(implicit redisPool: RedisClientPool, accountDAO: Acco
 
   private val accessTokenExpireSeconds = 3600
 
+
+
   override def validateClient(maybeCredential: Option[ClientCredential], request: AuthorizationRequest): Future[Boolean] = {
-    println(s"validating client")
+    Logger.info(s"validate Client start.")
     val clientCredential = maybeCredential.get
-    Future.successful(OauthClient.validate(clientCredential.clientId, clientCredential.clientSecret.getOrElse(""), request.grantType))
+    Logger.info(s"validate Client clientCredential:$clientCredential,grantType:${request.grantType}")
+    val isClientValid = OauthClient.validate(clientCredential.clientId, clientCredential.clientSecret.getOrElse(""), request.grantType)
+    Logger.info(s"validate Client is valid:$isClientValid")
+    Future.successful(isClientValid)
   }
 
   override def getStoredAccessToken(authInfo: AuthInfo[Account]): Future[Option[AccessToken]] = {

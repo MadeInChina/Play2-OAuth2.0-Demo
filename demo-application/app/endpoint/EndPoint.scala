@@ -23,6 +23,9 @@ abstract class EndPoint(cc: ControllerComponents, system: ActorSystem)(implicit 
 
   implicit val timeout = Timeout(10 seconds)
 
+  //https://github.com/nulab/play2-oauth2-provider/blob/master/README.md You want to use which grant types are supported or to use a customized handler for a grant type, you should override the handlers map in a customized TokenEndpoint trait.
+  override val tokenEndpoint = new OAuthTokenEndpoint
+
   implicit class future2then(future: Future[Any]) {
     def respond[T: Manifest](block: Any => Result): Future[Result] = {
       future map {
@@ -55,11 +58,11 @@ abstract class EndPoint(cc: ControllerComponents, system: ActorSystem)(implicit 
 
   def internalServerError(ex: Throwable) = InternalServerError(Json.parse(writePretty(Failed(INTERNAL_SERVER_ERROR, ex.getMessage, ex))))
 
+  def writePretty[A <: AnyRef](a: A)(implicit formats: Formats): String = JsonMethods.mapper.writeValueAsString(Extraction.decompose(a)(formats).snakizeKeys)
+
   def toPrettyJson(anyRef: AnyRef): String = {
     writePretty(anyRef)
   }
-
-  def writePretty[A <: AnyRef](a: A)(implicit formats: Formats): String = JsonMethods.mapper.writeValueAsString(Extraction.decompose(a)(formats).snakizeKeys)
 }
 
 case class Meta(`status_code`: Int, `service_code`: String = "", description: String = null)

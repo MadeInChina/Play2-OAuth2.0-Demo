@@ -11,11 +11,10 @@ import org.hrw.login.service.oauth2
 import org.hrw.login.service.oauth2.{OauthAccessToken, OauthClient}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfter, FlatSpec, MustMatchers}
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import redis.embedded.RedisServer
+import scalaoauth2.provider.OAuthGrantType
 
 import scala.collection.JavaConverters._
 
@@ -26,7 +25,7 @@ class OAuthEndPointSpec extends FlatSpec with MockitoSugar with MongoEmbedDataba
 
   val clientId: String = "test-ios"
   val clientSecret: String = "test-ios-client-secret"
-  val grantType: String = "client_credentials"
+  val grantType: String = OAuthGrantType.CLIENT_CREDENTIALS
   val redisServer: RedisServer = RedisServer.builder().port(6378).build()
   implicit var redisPool: RedisClientPool = null
   // by default port = 12345 & version = Version.2.3.0

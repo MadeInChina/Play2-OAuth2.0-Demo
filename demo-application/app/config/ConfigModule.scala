@@ -2,14 +2,13 @@ package config
 
 import com.google.inject.{Inject, Provider}
 import com.redis.RedisClientPool
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 import play.api.inject._
 import play.api.{Configuration, Environment}
 
 class ConfigModule extends Module {
-  def bindings(environment: Environment, configuration: Configuration) = {
+  override def bindings(environment: Environment, configuration: Configuration) = {
     Seq(
-      bind[Config].to(ConfigFactory.load()).eagerly(),
       bind[RedisClientPool].toProvider[RedisPoolProvider].eagerly()
     )
   }

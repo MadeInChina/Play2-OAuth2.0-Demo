@@ -5,6 +5,8 @@ import org.json4s.NoTypeHints
 import org.json4s.jackson.Serialization
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization._
+import play.api.Logger
+import scalaoauth2.provider.OAuthGrantType
 
 
 case class OauthClient(
@@ -30,16 +32,22 @@ object OauthClient {
   }
 
   def validate(clientId: String, clientSecret: String, grantType: String)(implicit redisPool: RedisClientPool): Boolean = {
-    println(s"Oauth validate")
+    Logger.info(s"Oauth validate start.")
+
     redisPool.withClient { client =>
       val key: String = s"${clientId}#${clientSecret}"
-      println(s"Oauth $key")
       client.get(key) match {
         case None => {
-          println(s"Oauth $key is invalid")
+          Logger.info(s"Oauth validate false, not found key: $key")
           false
         }
-        case Some(x) => convert(x).grantType == grantType || grantType == "refresh_token"
+        case Some(x) => {
+          val oauthClient = convert(x)
+          Logger.info(s"Oauth validate true, oauthClient:$oauthClient")
+          oauthClient.grantType == grantType || grantType == OAuthGrantType.REFRESH_TOKEN
+          Logger.info(s"Oauth validate oauthClient.grantType:${oauthClient.grantType} and grantType $grantType")
+          oauthClient.grantType == grantType || grantType == OAuthGrantType.REFRESH_TOKEN
+        }
       }
     }
   }
