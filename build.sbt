@@ -1,66 +1,64 @@
-import sbt.Keys._
-
 name := "play2-oauth2-demo"
 
-organization in ThisBuild := "com.hrw"
+organization := "com.hrw"
 
-version in ThisBuild := "0.1-SNAPSHOT"
+version := "0.1-SNAPSHOT"
 
-scalaVersion in ThisBuild := "2.11.6"
+scalaVersion := "2.12.6"
 
-scalacOptions in ThisBuild := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
+scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 resolvers += "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
+
+resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
+
+resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 
 run := {
   (run in `demo-application` in Compile).evaluated
 }
 
-lazy val versionOfJson4s = "3.2.11"
+lazy val versionOfJson4s = "3.4.2"
 
-lazy val versionOfAkka = "2.3.11"
+lazy val versionOfAkka = " 2.5.12"
 
 lazy val `demo-application` = project
   .enablePlugins(PlayScala)
   .dependsOn(`oauth2-service`)
   .settings(
     name := "demo-application",
-    ivyScala := ivyScala.value map {
-      _.copy(overrideScalaVersion = true)
-    },
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= logs,
     libraryDependencies ++= test,
-    libraryDependencies ++= json,
     libraryDependencies ++= mongodb,
-    libraryDependencies ++= guice,
+    libraryDependencies += guice,
     libraryDependencies ++= redis,
-    libraryDependencies ++= akka
+    libraryDependencies ++= json
   )
 
 
 lazy val `oauth2-service` = project
   .settings(
     name := "oauth2-service",
-    ivyScala := ivyScala.value map {
-      _.copy(overrideScalaVersion = true)
-    },
     libraryDependencies ++= logs,
     libraryDependencies ++= test,
-    libraryDependencies ++= json,
     libraryDependencies ++= mongodb,
-    libraryDependencies ++= guice,
-    libraryDependencies ++= akka,
+    libraryDependencies += guice,
     libraryDependencies ++= redis,
-    libraryDependencies ++= oauth2
+    libraryDependencies ++= oauth2,
+    libraryDependencies ++= json,
+    libraryDependencies += "com.typesafe" % "config" % "1.3.1"
   )
 
 lazy val redis = Seq(
-  "net.debasishg" %% "redisclient" % "3.0"
+  "net.debasishg" %% "redisclient" % "3.6"
 )
 
+
+
 lazy val oauth2 = Seq(
-  "com.nulab-inc" %% "play2-oauth2-provider" % "0.15.0"
+  "com.nulab-inc" %% "scala-oauth2-core" % "1.3.0",
+  "com.nulab-inc" %% "play2-oauth2-provider" % "1.3.0"
 )
 
 lazy val logs = Seq(
@@ -69,14 +67,14 @@ lazy val logs = Seq(
 
 lazy val test = Seq(
   //  "com.novocode" % "junit-interface" % "0.11" % "test",
-  "org.mockito" % "mockito-core" % "1.9.5" % "test",
-  "com.github.simplyscala" %% "scalatest-embedmongo" % "0.2.2" % "test",
-  "org.scalatest" %% "scalatest" % "2.2.5" % "test",
+  "org.mockito" % "mockito-core" % "2.18.3" % "test",
+  "com.github.simplyscala" %% "scalatest-embedmongo" % "0.2.4" % "test",
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
   "com.github.kstyrc" % "embedded-redis" % "0.6" % "test"
 )
 
 lazy val mongodb = Seq(
-  "com.novus" %% "salat" % "1.9.9"
+  "com.github.salat" %% "salat" % "1.11.2"
 )
 
 lazy val json = Seq(
@@ -84,19 +82,4 @@ lazy val json = Seq(
   "org.json4s" %% "json4s-ext" % versionOfJson4s withSources(),
   "com.jayway.restassured" % "json-path" % "2.4.0"
 )
-
-lazy val akka = Seq(
-  "com.typesafe.akka" %% "akka-actor" % versionOfAkka,
-  "com.typesafe.akka" %% "akka-cluster" % versionOfAkka,
-  "com.typesafe.akka" %% "akka-kernel" % versionOfAkka,
-  "com.typesafe.akka" %% "akka-slf4j" % versionOfAkka,
-  "com.typesafe.akka" %% "akka-contrib" % versionOfAkka,
-  "com.typesafe.akka" %% "akka-testkit" % versionOfAkka
-)
-
-lazy val guice = Seq(
-  "net.codingwell" %% "scala-guice" % "4.0.0",
-  "com.google.inject" % "guice" % "4.0"
-)
-
 

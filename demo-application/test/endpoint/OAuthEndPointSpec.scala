@@ -2,7 +2,6 @@ package endpoint
 
 import akka.actor.ActorSystem
 import com.github.simplyscala.{MongoEmbedDatabase, MongodProps}
-import scala.collection.JavaConverters._
 import com.jayway.restassured.path.json.JsonPath
 import com.redis.RedisClientPool
 import com.typesafe.config.ConfigFactory
@@ -10,11 +9,14 @@ import de.flapdoodle.embed.mongo.distribution.Version
 import org.hrw.login.service.mongodb.{Account, AccountDAO, MongoDB}
 import org.hrw.login.service.oauth2
 import org.hrw.login.service.oauth2.{OauthAccessToken, OauthClient}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfter, FlatSpec, MustMatchers}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import redis.embedded.RedisServer
+import scalaoauth2.provider.OAuthGrantType
+
+import scala.collection.JavaConverters._
 
 
 class OAuthEndPointSpec extends FlatSpec with MockitoSugar with MongoEmbedDatabase with MustMatchers with BeforeAndAfter {
@@ -23,7 +25,7 @@ class OAuthEndPointSpec extends FlatSpec with MockitoSugar with MongoEmbedDataba
 
   val clientId: String = "test-ios"
   val clientSecret: String = "test-ios-client-secret"
-  val grantType: String = "client_credentials"
+  val grantType: String = OAuthGrantType.CLIENT_CREDENTIALS
   val redisServer: RedisServer = RedisServer.builder().port(6378).build()
   implicit var redisPool: RedisClientPool = null
   // by default port = 12345 & version = Version.2.3.0
@@ -38,10 +40,10 @@ class OAuthEndPointSpec extends FlatSpec with MockitoSugar with MongoEmbedDataba
     mongoDB = new MongoDB(ConfigFactory.load("application.test.conf"))
     accountDAO = new AccountDAO(mongoDB)
     redisPool = new RedisClientPool("localhost", 6378)
-    mongoProps = mongoStart(version = Version.V2_6_1)
+    mongoProps = mongoStart(version = Version.V3_5_1)
     redisServer.start()
 
-    oAuthEndPoint = new OAuthEndPoint(actorSystem)
+    oAuthEndPoint = new OAuthEndPoint(null, actorSystem)
   }
 
   after {
@@ -86,7 +88,7 @@ class OAuthEndPointSpec extends FlatSpec with MockitoSugar with MongoEmbedDataba
 
 }
 
-class JsonObject(in: String)  {
+class JsonObject(in: String) {
   val json = in
   val ctx = new JsonPath(json)
 
