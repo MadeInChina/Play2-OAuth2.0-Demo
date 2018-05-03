@@ -1,87 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="false" debug="false">
-    <property name="LOG_HOME" value="logs/"/>
-    <property name="LOG_SIZE" value="5MB"/>
+  <property name="LOG_HOME" value="logs/"/>
+  <property name="LOG_SIZE" value="5MB"/>
 
-    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>[%4p] [%d{ISO8601}] [%t] %c{1}: %m%n</pattern>
-        </encoder>
-    </appender>
+  <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>[%4p] [%d{ISO8601}] [%t] %c{1}: %m%n</pattern>
+    </encoder>
+  </appender>
 
-    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${LOG_HOME}/log.%d{yyyy-MM-dd}.%i.log.zip</FileNamePattern>
-            <timeBasedFileNamingAndTriggeringPolicy
-                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <!-- or whenever the file size reaches 100MB -->
-                <maxFileSize>10240MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-            <MaxHistory>30</MaxHistory>
+  <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>${LOG_HOME}/log.%d{yyyy-MM-dd}.%i.log.zip</FileNamePattern>
+      <timeBasedFileNamingAndTriggeringPolicy
+        class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <!-- or whenever the file size reaches 100MB -->
+        <maxFileSize>10240MB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+      <MaxHistory>30</MaxHistory>
 
-        </rollingPolicy>
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
-        </encoder>
-    </appender>
+    </rollingPolicy>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+    </encoder>
+  </appender>
 
-    <appender name="ACCESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/access.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- daily rollover with compression -->
-            <fileNamePattern>access-log-%d{yyyy-MM-dd}.gz</fileNamePattern>
-            <!-- keep 1 week worth of history -->
-            <maxHistory>7</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} %message%n</pattern>
-            <!-- this quadruples logging throughput -->
-            <immediateFlush>false</immediateFlush>
-        </encoder>
-    </appender>
+  <appender name="ACCESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_HOME}/access.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- daily rollover with compression -->
+      <fileNamePattern>access-log-%d{yyyy-MM-dd}.gz</fileNamePattern>
+      <!-- keep 1 week worth of history -->
+      <maxHistory>7</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} %message%n</pattern>
+      <!-- this quadruples logging throughput -->
+      <immediateFlush>false</immediateFlush>
+    </encoder>
+  </appender>
 
-    <!-- additivity=false ensures access log data only goes to the access log -->
-    <logger name="filter.LoggingFilter" level="INFO">
-        <appender-ref ref="ACCESS_FILE" />
-    </logger>
+  <!-- additivity=false ensures access log data only goes to the access log -->
+  <logger name="filter.LoggingFilter" level="INFO">
+    <appender-ref ref="ACCESS_FILE"/>
+  </logger>
 
-    <logger name="org.apache.hadoop" level="ERROR">
-        <appender-ref ref="console"/>
-        <appender-ref ref="file"/>
-    </logger>
+  <logger name="org.apache.hadoop" level="ERROR">
+    <appender-ref ref="console"/>
+    <appender-ref ref="file"/>
+  </logger>
 
-    <logger name="org.apache.zookeeper" level="ERROR">
-        <appender-ref ref="console"/>
-        <appender-ref ref="file"/>
-    </logger>
+  <logger name="org.apache.zookeeper" level="ERROR">
+    <appender-ref ref="console"/>
+    <appender-ref ref="file"/>
+  </logger>
 
-    <logger name="org.apache.solr" level="ERROR">
-        <appender-ref ref="console"/>
-        <appender-ref ref="file"/>
-    </logger>
+  <logger name="org.apache.solr" level="ERROR">
+    <appender-ref ref="console"/>
+    <appender-ref ref="file"/>
+  </logger>
 
-    <logger name="akka.cluster" level="WARN" additivity="false">
-        <appender-ref ref="console"/>
-        <appender-ref ref="file"/>
-    </logger>
+  <logger name="akka.cluster" level="WARN" additivity="false">
+    <appender-ref ref="console"/>
+    <appender-ref ref="file"/>
+  </logger>
 
-    <logger name="org.elasticsearch.plugins" level="WARN" additivity="false">
-        <appender-ref ref="console"/>
-        <appender-ref ref="file"/>
-    </logger>
+  <logger name="endpoint" level="DEBUG" additivity="false">
+    <appender-ref ref="console"/>
+    <appender-ref ref="file"/>
+  </logger>
 
-    <logger name="com.remarkmedia.dragon.service.infrastructure.oauth2" level="DEBUG" additivity="false">
-        <appender-ref ref="console"/>
-        <appender-ref ref="file"/>
-    </logger>
-
-    <logger name="endpoint" level="DEBUG" additivity="false">
-        <appender-ref ref="console"/>
-        <appender-ref ref="file"/>
-    </logger>
-
-    <root level="DEBUG">
-        <appender-ref ref="console"/>
-        <appender-ref ref="file"/>
-    </root>
+  <root level="DEBUG">
+    <appender-ref ref="console"/>
+    <appender-ref ref="file"/>
+  </root>
 </configuration>

@@ -6,8 +6,10 @@ import com.typesafe.config.ConfigFactory
 import org.hrw.login.service.mongodb.{Account, AccountDAO, MongoDB}
 import org.hrw.login.service.oauth2
 import org.hrw.login.service.oauth2.{OauthAccessToken, OauthClient}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfter, FlatSpec, MustMatchers}
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
@@ -29,7 +31,7 @@ class OAuthEndPointInitSpec extends FlatSpec with MockitoSugar with MustMatchers
     mongoDB = new MongoDB(ConfigFactory.load("application.test.conf"))
     accountDAO = new AccountDAO(mongoDB)
     redisPool = new RedisClientPool("localhost", 6379)
-    oAuthEndPoint = new OAuthEndPoint(actorSystem)
+    oAuthEndPoint = new OAuthEndPoint(null, actorSystem)
   }
 
 
