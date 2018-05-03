@@ -6,9 +6,9 @@ import com.redis.RedisClientPool
 import org.hrw.login.service.mongodb.AccountDAO
 import org.hrw.login.service.oauth2.{Account, OauthAccessToken, OauthAuthorizationCode, OauthClient}
 import play.api.mvc.Action
+import scalaoauth2.provider._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaoauth2.provider._
 
 class AuthorizeAction {
 
@@ -26,6 +26,8 @@ object AuthorizeAction extends OAuth2Provider {
 }
 
 class AuthorizeDataHandler(implicit redisPool: RedisClientPool, accountDAO: AccountDAO) extends DataHandler[Account] {
+
+  private val accessTokenExpireSeconds = 3600
 
   override def validateClient(clientCredential: ClientCredential, grantType: String): Future[Boolean] = {
     println(s"validating client")
@@ -45,33 +47,19 @@ class AuthorizeDataHandler(implicit redisPool: RedisClientPool, accountDAO: Acco
     Future.successful(toAccessToken(accessToken))
   }
 
-  private val accessTokenExpireSeconds = 3600
-
-  private def toAccessToken(accessToken: OauthAccessToken) = {
-    AccessToken(
-      accessToken.accessToken,
-      Some(accessToken.refreshToken),
-      None,
-      Some(accessTokenExpireSeconds),
-      new Date(accessToken.createdAt)
-    )
-  }
-
-  // Password grant
-
   override def findUser(username: String, password: String): Future[Option[Account]] = {
     println(s"find user by username and password")
     Future.successful(Account.authenticate(username, password))
   }
 
-  // Client credentials grant
+  // Password grant
 
   override def findClientUser(clientCredential: ClientCredential, scope: Option[String]): Future[Option[Account]] = {
     println(s"find user by client credential")
     Future.successful(OauthClient.findClientCredentials(clientCredential.clientId, clientCredential.clientSecret.getOrElse("")))
   }
 
-  // Refresh token grant
+  // Client credentials grant
 
   override def findAuthInfoByRefreshToken(refreshToken: String): Future[Option[AuthInfo[Account]]] = {
     println(s"find authInfo by refresh token")
@@ -80,6 +68,8 @@ class AuthorizeDataHandler(implicit redisPool: RedisClientPool, accountDAO: Acco
         account <- accessToken.account
         client <- accessToken.oauthClient
       } yield {
+        println("account:" + account)
+        println("client:" + client)
         AuthInfo(
           user = account,
           clientId = Some(client.clientId),
@@ -90,15 +80,15 @@ class AuthorizeDataHandler(implicit redisPool: RedisClientPool, accountDAO: Acco
     })
   }
 
+  // Refresh token grant
   override def refreshAccessToken(authInfo: AuthInfo[Account], refreshToken: String): Future[AccessToken] = {
-    println(s"refresh access token")
+    println(s"refresh access token authInfo:" + authInfo)
     val clientId = authInfo.clientId.getOrElse(throw new InvalidClient())
     val client = OauthClient.findByClientId(clientId).getOrElse(throw new InvalidClient())
     val accessToken = OauthAccessToken.refresh(authInfo.user, client)
+    println(s"refresh access token end")
     Future.successful(toAccessToken(accessToken))
   }
-
-  // Authorization code grant
 
   override def findAuthInfoByCode(code: String): Future[Option[AuthInfo[Account]]] = {
     println(s"find authInfo by authorization code")
@@ -117,16 +107,28 @@ class AuthorizeDataHandler(implicit redisPool: RedisClientPool, accountDAO: Acco
     })
   }
 
+  // Authorization code grant
+
   override def deleteAuthCode(code: String): Future[Unit] = {
     println(s"delete authorization code")
     Future.successful(OauthAuthorizationCode.delete(code))
   }
 
-  // Protected resource
-
   override def findAccessToken(token: String): Future[Option[AccessToken]] = {
     println(s"find accesss token")
     Future.successful(OauthAccessToken.findByAccessToken(token).map(toAccessToken))
+  }
+
+  // Protected resource
+
+  private def toAccessToken(accessToken: OauthAccessToken) = {
+    AccessToken(
+      accessToken.accessToken,
+      Some(accessToken.refreshToken),
+      None,
+      Some(accessTokenExpireSeconds),
+      new Date(accessToken.createdAt)
+    )
   }
 
   override def findAuthInfoByAccessToken(accessToken: AccessToken): Future[Option[AuthInfo[Account]]] = {
